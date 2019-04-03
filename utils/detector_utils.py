@@ -52,19 +52,12 @@ def hand_histogram(image_np, left, right, top, bottom):
 def hist_masking(frame, hist):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     dst = cv2.calcBackProject([hsv], [0, 1], hist, [0, 180, 0, 256], 1)
-
     disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))
     cv2.filter2D(dst, -1, disc, dst)
-
     ret, thresh = cv2.threshold(dst, 150, 255, cv2.THRESH_BINARY)
-
     # thresh = cv2.dilate(thresh, None, iterations=5)
-
     thresh = cv2.merge((thresh, thresh, thresh))
-
     return cv2.bitwise_and(frame, thresh)
-
-
 
 
 def contours(hist_mask_image):
@@ -78,12 +71,9 @@ def contours(hist_mask_image):
 def max_contour(contour_list):
     max_i = 0
     max_area = 0
-
     for i in range(len(contour_list)):
         cnt = contour_list[i]
-
         area_cnt = cv2.contourArea(cnt)
-
         if area_cnt > max_area:
             max_area = area_cnt
             max_i = i
@@ -132,6 +122,7 @@ def calculateFingers(res, drawing):
                     middle_tip = start
                     edge = (far[0], int(start[1] + (end[1]-start[1])/2))
                     pointer_tip = (start[0], end[1])
+                    textStart = (start[0], start[1]-10)
                     # cv2.circle(drawing, far, 3, [211, 84, 0],  thickness=2, lineType=8, shift=0)
                     # cv2.circle(drawing, start, 3, [211, 84, 0],  thickness=2, lineType=8, shift=0)
                     # cv2.circle(drawing, end, 3, [211, 84, 0],  thickness=2, lineType=8, shift=0)
@@ -140,6 +131,7 @@ def calculateFingers(res, drawing):
             if cnt == 1 and edge[1] > middle_tip[1] and edge[0] > middle_tip[0] and edge[1] < pointer_tip[1]:
                 cv2.line(drawing, pointer_tip, edge, (77, 255, 9), 5)
                 cv2.line(drawing, edge, middle_tip, (77, 255, 9), 5)
+                cv2.putText(drawing, 'IES ASG rocks!', textStart, cv2.FONT_HERSHEY_PLAIN, 1, (77, 255, 9), 2)
                 return True
             else:
                 return False
@@ -177,9 +169,8 @@ def grab_cut_image(image_np, left, top, width, height):
         print(inst)
 
 
-    # Load a frozen infrerence graph into memory
+# Load a frozen infrerence graph into memory
 def load_inference_graph():
-
     # load frozen tensorflow model into memory
     print("> ====== loading HAND frozen graph into memory")
     detection_graph = tf.Graph()
