@@ -21,7 +21,7 @@ if __name__ == '__main__':
         '--fps',
         dest='fps',
         type=int,
-        default=1,
+        default=0,
         help='Show FPS on detection/display visualization')
     parser.add_argument(
         '-src',
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     cv2.namedWindow('Single-Threaded Detection', cv2.WINDOW_NORMAL)
 
     while True:
+
         # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
         ret, image_np = cap.read()
         # image_np = cv2.flip(image_np, 1)
@@ -87,6 +88,9 @@ if __name__ == '__main__':
         except:
             print("Error converting to RGB")
 
+        # flip image in order to have a mirror effect
+        image_np = cv2.flip(image_np, 1)
+
         # Actual detection. Variable boxes contains the bounding box cordinates for hands detected,
         # while scores contains the confidence for each of these boxes.
         # Hint: If len(boxes) > 1 , you may assume you have found atleast one hand (within your score threshold)
@@ -94,10 +98,17 @@ if __name__ == '__main__':
         boxes, scores = detector_utils.detect_objects(image_np,
                                                       detection_graph, sess)
 
-        # draw bounding boxes on frame
-        detector_utils.draw_box_on_image(num_hands_detect, args.score_thresh,
+        # gesture detection
+        gesture_found = detector_utils.draw_hand_contour(num_hands_detect, args.score_thresh,
                                          scores, boxes, im_width, im_height,
                                          image_np)
+
+        # draw rectangle if no greater than
+        if not gesture_found:
+            detector_utils.draw_box_on_image(num_hands_detect, args.score_thresh,
+                                         scores, boxes, im_width, im_height,
+                                         image_np)
+
 
         # Calculate Frames per second (FPS)
         num_frames += 1

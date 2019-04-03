@@ -29,11 +29,19 @@ def worker(input_q, output_q, cap_params, frame_processed):
 
             boxes, scores = detector_utils.detect_objects(
                 frame, detection_graph, sess)
-            # draw bounding boxes
-            detector_utils.draw_box_on_image(
+
+
+            # gesture detection
+            gesture_found = detector_utils.draw_hand_contour(
                 cap_params['num_hands_detect'], cap_params["score_thresh"],
                 scores, boxes, cap_params['im_width'], cap_params['im_height'],
                 frame)
+
+            # draw rectangle if no greater than
+            if not gesture_found:
+                detector_utils.draw_box_on_image(cap_params['num_hands_detect'], cap_params["score_thresh"],
+                                             scores, boxes, cap_params['im_width'], cap_params['im_height'], frame)
+
             # add frame annotated with bounding box to queue
             output_q.put(frame)
             frame_processed += 1
@@ -64,7 +72,7 @@ if __name__ == '__main__':
         '--fps',
         dest='fps',
         type=int,
-        default=1,
+        default=0,
         help='Show FPS on detection/display visualization')
     parser.add_argument(
         '-wd',
